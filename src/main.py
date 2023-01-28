@@ -50,7 +50,7 @@ def export_metrics():
 
 @app.route("/health")
 def health():
-    pass
+    return "ok"
 
 
 if __name__ == "__main__":
