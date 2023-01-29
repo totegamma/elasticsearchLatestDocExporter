@@ -1,5 +1,4 @@
 import os
-import sys
 import json
 import flask
 import requests
@@ -22,11 +21,8 @@ def export_metrics():
     # HELP elasticsearch_latestdoc_elapsed_seconds The elapsed seconds from latest docment inserted
     # TYPE elasticsearch_latestdoc_elapsed_seconds gauge
     ''')
-    print(ENTRY_COUNT, flush=True)
     for i in range(ENTRY_COUNT):
-        print(i, flush=True)
         try:
-            print(os.getenv(f"QUERY{i}"), flush=True);
             query = {
                 "_source": False,
                 "size": 1,
@@ -38,11 +34,10 @@ def export_metrics():
                                      auth=HTTPBasicAuth(ELASTIC_USERNAME, ELASTIC_PASSWORD),
                                      headers={'Content-Type': 'application/json'},
                                      data=json.dumps(query)).json()
-            print(result, file=sys.stderr, flush=True)
             name = os.getenv(f"NAME{i}")
             latest = parser.parse(result['hits']['hits'][0]['fields']['@timestamp'][0])
             elapsed = datetime.now(timezone.utc) - latest
-            metrics += f'elasticsearch_latestdoc_elapsed_seconds{{name="{name}"}} {elapsed.seconds}'
+            metrics += f'elasticsearch_latestdoc_elapsed_seconds{{name="{name}"}} {elapsed.seconds}' + '\n'
         except Exception as e:
             print(e, flush=True)
     return metrics
